@@ -17,17 +17,27 @@ await loadEmbeddingModel();
 
 
 /* ✅ Handle preflight requests for ALL routes */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ayurveda-plus.vercel.app"
+];
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
+
   next();
 });
-
 
 
 /* Health check */
