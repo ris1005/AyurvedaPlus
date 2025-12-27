@@ -5,39 +5,28 @@ import { loadEmbeddingModel } from "./services/embeddingService.js";
 
 const app = express();
 /* ✅ VERY IMPORTANT: CORS FIRST */
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}));
-
-/* ✅ Body parser AFTER CORS */
-app.use(express.json());
-await loadEmbeddingModel();
-
-
-/* ✅ Handle preflight requests for ALL routes */
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ayurveda-plus.vercel.app"
 ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+/* ✅ Body parser AFTER CORS */
+app.use(express.json());
+await loadEmbeddingModel();
 
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
 
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 
 
 /* Health check */
